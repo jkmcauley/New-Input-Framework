@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Game.Scripts.UI;
 
 
@@ -46,18 +47,19 @@ namespace Game.Scripts.LiveObjects
         private GameObject _marker;
 
         private bool _inHoldState = false;
+        private InputSystem_Actions _input;
 
         private static int _currentZoneID = 0;
         public static int CurrentZoneID
-        { 
-            get 
-            { 
-               return _currentZoneID; 
+        {
+            get
+            {
+                return _currentZoneID;
             }
             set
             {
-                _currentZoneID = value; 
-                         
+                _currentZoneID = value;
+
             }
         }
 
@@ -66,10 +68,15 @@ namespace Game.Scripts.LiveObjects
         public static event Action<int> onHoldStarted;
         public static event Action<int> onHoldEnded;
 
+        private void Awake()
+        {
+            _input = new InputSystem_Actions();
+        }
+
         private void OnEnable()
         {
             InteractableZone.onZoneInteractionComplete += SetMarker;
-
+            _input.Player.Enable();
         }
 
         private void OnTriggerEnter(Collider other)
@@ -110,7 +117,7 @@ namespace Game.Scripts.LiveObjects
                         _inZone = true;
                         if (_displayMessage != null)
                         {
-                            string message = $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
+                            string message = $"Hold the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
                             UIManager.Instance.DisplayInteractableZoneMessage(true, message);
                         }
                         else
@@ -124,8 +131,8 @@ namespace Game.Scripts.LiveObjects
         {
             if (_inZone == true)
             {
-
-                if (Input.GetKeyDown(_zoneKeyInput) && _keyState != KeyState.PressHold)
+                // if (Input.GetKeyDown(_zoneKeyInput) && _keyState != KeyState.PressHold)
+                if (WasInteractPressedThisFrame() && _keyState != KeyState.PressHold)
                 {
                     //press
                     switch (_zoneType)
@@ -149,30 +156,37 @@ namespace Game.Scripts.LiveObjects
                             break;
                     }
                 }
-                else if (Input.GetKey(_zoneKeyInput) && _keyState == KeyState.PressHold && _inHoldState == false)
+                // else if (Input.GetKey(_zoneKeyInput) && _keyState == KeyState.PressHold && _inHoldState == false)
+                else if (_input.Player.InteractHold.WasPressedThisFrame() && _keyState == KeyState.PressHold && _inHoldState == false)
                 {
                     _inHoldState = true;
 
-                   
-
                     switch (_zoneType)
-                    {                      
+                    {
                         case ZoneType.HoldAction:
                             PerformHoldAction();
-                            break;           
+                            break;
                     }
                 }
 
-                if (Input.GetKeyUp(_zoneKeyInput) && _keyState == KeyState.PressHold)
+                // if (Input.GetKeyUp(_zoneKeyInput) && _keyState == KeyState.PressHold)
+                if (_input.Player.InteractHold.WasReleasedThisFrame() && _keyState == KeyState.PressHold)
                 {
                     _inHoldState = false;
                     onHoldEnded?.Invoke(_zoneID);
                 }
-
-               
             }
         }
-       
+
+        private bool WasInteractPressedThisFrame()
+        {
+            // Space detonator zone uses Detonate; all other press zones use Interact (E).
+            if (_zoneKeyInput == KeyCode.Space)
+                return _input.Player.Detonate.WasPressedThisFrame();
+
+            return _input.Player.Interact.WasPressedThisFrame();
+        }
+
         private void CollectItems()
         {
             foreach (var item in _zoneItems)
@@ -245,6 +259,7 @@ namespace Game.Scripts.LiveObjects
             if (other.CompareTag("Player"))
             {
                 _inZone = false;
+                _inHoldState = false;
                 UIManager.Instance.DisplayInteractableZoneMessage(false);
             }
         }
@@ -252,8 +267,9 @@ namespace Game.Scripts.LiveObjects
         private void OnDisable()
         {
             InteractableZone.onZoneInteractionComplete -= SetMarker;
-        }       
-        
+            _input.Player.Disable();
+        }
+
     }
 }
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using Cinemachine;
 
 namespace Game.Scripts.LiveObjects
@@ -19,21 +20,29 @@ namespace Game.Scripts.LiveObjects
         private int _activeCamera = 0;
         [SerializeField]
         private InteractableZone _interactableZone;
+        private InputSystem_Actions _input;
 
         public static event Action onHackComplete;
         public static event Action onHackEnded;
+
+        private void Awake()
+        {
+            _input = new InputSystem_Actions();
+        }
 
         private void OnEnable()
         {
             InteractableZone.onHoldStarted += InteractableZone_onHoldStarted;
             InteractableZone.onHoldEnded += InteractableZone_onHoldEnded;
+            _input.Player.Enable();
         }
 
         private void Update()
         {
             if (_hacked == true)
             {
-                if (Input.GetKeyDown(KeyCode.E))
+                // if (Input.GetKeyDown(KeyCode.E))
+                if (_input.Player.Interact.WasPressedThisFrame())
                 {
                     var previous = _activeCamera;
                     _activeCamera++;
@@ -47,7 +56,8 @@ namespace Game.Scripts.LiveObjects
                     _cameras[previous].Priority = 9;
                 }
 
-                if (Input.GetKeyDown(KeyCode.Escape))
+                // if (Input.GetKeyDown(KeyCode.Escape))
+                if (_input.Player.Exit.WasPressedThisFrame())
                 {
                     _hacked = false;
                     onHackEnded?.Invoke();
@@ -88,7 +98,7 @@ namespace Game.Scripts.LiveObjects
             }
         }
 
-        
+
         IEnumerator HackingRoutine()
         {
             while (_progressBar.value < 1)
@@ -107,13 +117,13 @@ namespace Game.Scripts.LiveObjects
             //enable Vcam1
             _cameras[0].Priority = 11;
         }
-        
+
         private void OnDisable()
         {
             InteractableZone.onHoldStarted -= InteractableZone_onHoldStarted;
             InteractableZone.onHoldEnded -= InteractableZone_onHoldEnded;
+            _input.Player.Disable();
         }
     }
 
 }
-
