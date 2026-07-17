@@ -41,14 +41,9 @@ namespace Game.Scripts.Player
         private void Awake()
         {
             _input = new InputSystem_Actions();
-
         }
 
-
-
-
         private void Start()
-
         {
             _controller = GetComponent<CharacterController>();
 
@@ -59,14 +54,12 @@ namespace Game.Scripts.Player
 
             if (_anim == null)
                 Debug.Log("Failed to connect the Animator");
-
         }
 
         private void Update()
         {
             if (_canMove == true)
                 CalcutateMovement();
-
         }
 
         private void CalcutateMovement()
@@ -94,7 +87,6 @@ namespace Game.Scripts.Player
             }
 
             _controller.Move(velocity * Time.deltaTime);
-
         }
 
         private void InteractableZone_onZoneInteractionComplete(InteractableZone zone)
@@ -145,8 +137,5 @@ namespace Game.Scripts.Player
             Drone.onExitFlightmode -= ReturnPlayerControl;
             _input.Player.Disable();
         }
-
     }
 }
-
-
