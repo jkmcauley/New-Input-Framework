@@ -25,11 +25,11 @@ namespace Game.Scripts.LiveObjects
 
         private void InteractableZone_onZoneInteractionComplete(InteractableZone zone)
         {
-            if (_c4Placed != true && zone.GetZoneID() == 1) //placed C4
-            {             
-                PlaceC4(zone.GetItems()[0].transform);
-                _c4Placed = true;                
-            }
+            if (_c4 == null || _c4Placed == true || zone.GetZoneID() != 1)
+                return;
+
+            PlaceC4(zone.GetItems()[0].transform);
+            _c4Placed = true;
         }
 
         public void TriggerExplosion()
@@ -45,6 +45,9 @@ namespace Game.Scripts.LiveObjects
 
         void PlaceC4(Transform target)
         {
+            if (_c4 == null)
+                return;
+
             _c4.Place(target);
             _c4.gameObject.SetActive(true);
             _c4Placed = true;
@@ -56,7 +59,7 @@ namespace Game.Scripts.LiveObjects
             _render.enabled = true;
         }
 
-        private void Ondisable()
+        private void OnDisable()
         {
             InteractableZone.onZoneInteractionComplete -= InteractableZone_onZoneInteractionComplete;
         }

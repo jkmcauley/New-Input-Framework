@@ -33,6 +33,13 @@ namespace Game.Scripts.LiveObjects
 
         private void Start()
         {
+            // Keep forklift upright (physics was tipping it).
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null)
+                rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            var e = transform.eulerAngles;
+            transform.rotation = Quaternion.Euler(0f, e.y, 0f);
+
             // Forklift body blocks the interact trigger — let the player walk through it.
             var playerCol = GameObject.FindGameObjectWithTag("Player")?.GetComponent<Collider>();
             var forkliftCol = GetComponent<Collider>();
