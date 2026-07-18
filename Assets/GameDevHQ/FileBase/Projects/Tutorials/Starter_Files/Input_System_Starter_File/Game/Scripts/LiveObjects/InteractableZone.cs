@@ -121,7 +121,10 @@ namespace Game.Scripts.LiveObjects
                         _inZone = true;
                         if (_displayMessage != null)
                         {
-                            string message = $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
+                            // Zone 6 (crate) uses tap/hold — keep prompt accurate without changing input.
+                            string message = _zoneID == 6
+                                ? $"Tap and Hold the {_zoneKeyInput.ToString()} key to {_displayMessage}."
+                                : $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
                             UIManager.Instance.DisplayInteractableZoneMessage(true, message);
                         }
                         else

@@ -122,7 +122,7 @@ namespace Game.Scripts.LiveObjects
             int rng = Random.Range(0, _brakeOff.Count);
             _brakeOff[rng].constraints = RigidbodyConstraints.None;
             // _brakeOff[rng].AddForce(new Vector3(1f, 1f, 1f), ForceMode.Force);
-            Vector3 force = new Vector3(1f, 1f, 1f) * forceMultiplier;
+            Vector3 force = new Vector3(2f, 2f, 2f) * forceMultiplier;
             _brakeOff[rng].AddForce(force, ForceMode.Impulse);
             _brakeOff.Remove(_brakeOff[rng]);
         }

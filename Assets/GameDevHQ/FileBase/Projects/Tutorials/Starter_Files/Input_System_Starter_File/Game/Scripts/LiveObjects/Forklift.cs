@@ -31,6 +31,15 @@ namespace Game.Scripts.LiveObjects
             _input = new InputSystem_Actions();
         }
 
+        private void Start()
+        {
+            // Forklift body blocks the interact trigger — let the player walk through it.
+            var playerCol = GameObject.FindGameObjectWithTag("Player")?.GetComponent<Collider>();
+            var forkliftCol = GetComponent<Collider>();
+            if (playerCol != null && forkliftCol != null)
+                Physics.IgnoreCollision(playerCol, forkliftCol, true);
+        }
+
         private void OnEnable()
         {
             InteractableZone.onZoneInteractionComplete += EnterDriveMode;
