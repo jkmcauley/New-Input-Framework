@@ -81,49 +81,64 @@ namespace Game.Scripts.LiveObjects
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player") && _currentZoneID > _requiredID)
+            if (other.CompareTag("Player"))
+                TryEnterZone();
+        }
+
+        // If the player is already standing in this trigger when CurrentZoneID
+        // unlocks (e.g. after finishing the drone), OnTriggerEnter will not fire
+        // again. Stay re-checks so forklift/crate/etc. can arm without leaving.
+        private void OnTriggerStay(Collider other)
+        {
+            if (other.CompareTag("Player") && _inZone == false)
+                TryEnterZone();
+        }
+
+        private void TryEnterZone()
+        {
+            if (_currentZoneID <= _requiredID)
+                return;
+
+            switch (_zoneType)
             {
-                switch (_zoneType)
-                {
-                    case ZoneType.Collectable:
-                        if (_itemsCollected == false)
-                        {
-                            _inZone = true;
-                            if (_displayMessage != null)
-                            {
-                                string message = $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
-                                UIManager.Instance.DisplayInteractableZoneMessage(true, message);
-                            }
-                            else
-                                UIManager.Instance.DisplayInteractableZoneMessage(true, $"Press the {_zoneKeyInput.ToString()} key to collect");
-                        }
-                        break;
-
-                    case ZoneType.Action:
-                        if (_actionPerformed == false)
-                        {
-                            _inZone = true;
-                            if (_displayMessage != null)
-                            {
-                                string message = $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
-                                UIManager.Instance.DisplayInteractableZoneMessage(true, message);
-                            }
-                            else
-                                UIManager.Instance.DisplayInteractableZoneMessage(true, $"Press the {_zoneKeyInput.ToString()} key to perform action");
-                        }
-                        break;
-
-                    case ZoneType.HoldAction:
+                case ZoneType.Collectable:
+                    if (_itemsCollected == false)
+                    {
                         _inZone = true;
                         if (_displayMessage != null)
                         {
-                            string message = $"Hold the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
+                            string message = $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
                             UIManager.Instance.DisplayInteractableZoneMessage(true, message);
                         }
                         else
-                            UIManager.Instance.DisplayInteractableZoneMessage(true, $"Hold the {_zoneKeyInput.ToString()} key to perform action");
-                        break;
-                }
+                            UIManager.Instance.DisplayInteractableZoneMessage(true, $"Press the {_zoneKeyInput.ToString()} key to collect");
+                    }
+                    break;
+
+                case ZoneType.Action:
+                    if (_actionPerformed == false)
+                    {
+                        _inZone = true;
+                        if (_displayMessage != null)
+                        {
+                            string message = $"Press the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
+                            UIManager.Instance.DisplayInteractableZoneMessage(true, message);
+                        }
+                        else
+                            UIManager.Instance.DisplayInteractableZoneMessage(true, $"Press the {_zoneKeyInput.ToString()} key to perform action");
+                    }
+                    break;
+
+                case ZoneType.HoldAction:
+                    _inZone = true;
+                    if (_displayMessage != null)
+                    {
+                        string message = $"Hold the {_zoneKeyInput.ToString()} key to {_displayMessage}.";
+                        UIManager.Instance.DisplayInteractableZoneMessage(true, message);
+                    }
+                    else
+                        UIManager.Instance.DisplayInteractableZoneMessage(true, $"Hold the {_zoneKeyInput.ToString()} key to perform action");
+                    break;
             }
         }
 
@@ -132,7 +147,8 @@ namespace Game.Scripts.LiveObjects
             if (_inZone == true)
             {
                 // if (Input.GetKeyDown(_zoneKeyInput) && _keyState != KeyState.PressHold)
-                if (WasInteractPressedThisFrame() && _keyState != KeyState.PressHold)
+                // Zone 6 (crate) uses Player.Interacttaphold Tap/Hold in Crate.cs
+                if (WasInteractPressedThisFrame() && _keyState != KeyState.PressHold && _zoneID != 6)
                 {
                     //press
                     switch (_zoneType)
@@ -229,6 +245,11 @@ namespace Game.Scripts.LiveObjects
         public int GetZoneID()
         {
             return _zoneID;
+        }
+
+        public bool PlayerInZone
+        {
+            get { return _inZone; }
         }
 
         public void CompleteTask(int zoneID)

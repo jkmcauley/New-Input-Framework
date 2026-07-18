@@ -73,6 +73,7 @@
         "Calcutate",
         "Flightmode",
         "Interactable",
+        "Interacttaphold",
         "Mathf",
         "Rigidbody"
     ]
